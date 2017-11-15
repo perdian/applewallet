@@ -1,4 +1,4 @@
-package de.perdian.tools.walletutil;
+package de.perdian.tools.applewallettools;
 
 import java.util.Optional;
 
@@ -10,6 +10,7 @@ public class BoardingPass extends Pass {
 
     private TransitType transitType = TransitType.GENERIC;
     private String groupingIdentifier = null;
+    private Image footer = null;
 
     @Override
     protected JsonObject toJsonObject() {
@@ -40,6 +41,13 @@ public class BoardingPass extends Pass {
     }
     public void setGroupingIdentifier(String groupingIdentifier) {
         this.groupingIdentifier = groupingIdentifier;
+    }
+
+    public Image getFooter() {
+        return this.footer;
+    }
+    public void setFooter(Image footer) {
+        this.footer = footer;
     }
 
 }

@@ -1,16 +1,16 @@
-package de.perdian.tools.walletutil;
+package de.perdian.tools.applewallettools;
 
-public enum DateStyle {
+public enum TextAlignment {
 
-    NONE("PKDateStyleNone"),
-    SHORT("PKDateStyleShort"),
-    MEDIUM("PKDateStyleMedium"),
-    LONG("PKDateStyleLong"),
-    FULL("PKDateStyleFull");
+    LEFT("PKTextAlignmentLeft"),
+    CENTER("PKTextAlignmentCenter"),
+    RIGHT("PKTextAlignmentRight"),
+    GENERIC("PKTextAlignmentGeneric"),
+    NATURAL("PKTextAlignmentNatural");
 
     private String value = null;
 
-    private DateStyle(String value) {
+    private TextAlignment(String value) {
         this.setValue(value);
     }
 

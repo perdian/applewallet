@@ -1,8 +1,17 @@
-package de.perdian.tools.walletutil;
+package de.perdian.tools.applewallettools;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -17,6 +26,8 @@ import com.google.gson.JsonObject;
 public abstract class Pass implements Serializable {
 
     static final long serialVersionUID = 1L;
+
+    private static final Logger log = LoggerFactory.getLogger(Pass.class);
 
     private String passTypeIdentifier = null;
     private String serialNumber = null;
@@ -43,6 +54,8 @@ public abstract class Pass implements Serializable {
     private List<Field<?>> auxiliaryFields = null;
     private List<Field<?>> backFields = null;
     private List<Field<?>> headerFields = null;
+    private Image logo = null;
+    private Image icon = null;
 
     /**
      * Creates an Apple Wallet pass
@@ -55,15 +68,56 @@ public abstract class Pass implements Serializable {
      * @throws SigningException
      *      thrown if the pass cannot be created correctly
      */
-     public SignedPass toSignedPass(SigningData signingData) {
+    public SignedPass toSignedPass(SigningData signingData) {
+        try {
 
-         JsonObject rootObject = this.toJsonObject();
+            log.info("Signing Apple Wallet pass for data: {}", this);
+            ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
+            try (ZipOutputStream zipOutputStream = new ZipOutputStream(byteOutputStream)) {
 
-System.err.println(new GsonBuilder().setPrettyPrinting().create().toJson(rootObject));
+                // Build the manifest and add into the target ZIP archive
+                JsonObject passJsonObject = this.toJsonObject();
+                String passJson = new GsonBuilder().setPrettyPrinting().create().toJson(passJsonObject);
+                zipOutputStream.putNextEntry(new ZipEntry("pass.json"));
+                zipOutputStream.write(passJson.getBytes("UTF-8"));
 
-         SignedPass signedPass = new SignedPass();
-         return signedPass;
-     }
+                // Add all available images as files within the target ZIP archive
+                Map<String, Image> images = this.toImages();
+                for (Map.Entry<String, Image> imageEntry : images.entrySet()) {
+                    if (imageEntry.getValue() != null) {
+                        if (imageEntry.getValue().getData() != null) {
+                            log.debug("Adding entry to target file: {}", imageEntry.getKey() + ".png");
+                            zipOutputStream.putNextEntry(new ZipEntry(imageEntry.getKey() + ".png"));
+                            zipOutputStream.write(imageEntry.getValue().getData());
+                        }
+                        if (imageEntry.getValue().getRetinaData() != null) {
+                            log.debug("Adding entry to target file: {}", imageEntry.getKey() + "@2x.png");
+                            zipOutputStream.putNextEntry(new ZipEntry(imageEntry.getKey() + "@2x.png"));
+                            zipOutputStream.write(imageEntry.getValue().getRetinaData());
+                        }
+                    }
+                }
+
+                // We're done, make sure everything is written into the stream
+                zipOutputStream.flush();
+
+            }
+
+            SignedPass signedPass = new SignedPass();
+            signedPass.setBytes(byteOutputStream.toByteArray());
+            return signedPass;
+
+        } catch (IOException e) {
+            throw new PassCreationException("Cannot create new pass", e);
+        }
+    }
+
+    protected Map<String, Image> toImages() {
+        Map<String, Image> images = new HashMap<>();
+        images.put("logo", this.getLogo());
+        images.put("icon", this.getIcon());
+        return images;
+    }
 
     /**
      * Append the details specific to the current style
@@ -305,6 +359,20 @@ System.err.println(new GsonBuilder().setPrettyPrinting().create().toJson(rootObj
     }
     public void setHeaderFields(List<Field<?>> headerFields) {
         this.headerFields = headerFields;
+    }
+
+    public Image getLogo() {
+        return this.logo;
+    }
+    public void setLogo(Image logo) {
+        this.logo = logo;
+    }
+
+    public Image getIcon() {
+        return this.icon;
+    }
+    public void setIcon(Image icon) {
+        this.icon = icon;
     }
 
 }

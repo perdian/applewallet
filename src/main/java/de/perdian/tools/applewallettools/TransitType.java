@@ -1,4 +1,4 @@
-package de.perdian.tools.walletutil;
+package de.perdian.tools.applewallettools;
 
 /**
  * Represents the available transit types according to the Passbook API

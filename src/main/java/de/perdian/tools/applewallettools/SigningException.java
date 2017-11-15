@@ -1,4 +1,4 @@
-package de.perdian.tools.walletutil;
+package de.perdian.tools.applewallettools;
 
 /**
  * Signalizes that an error has occured while trying to create an Apple Wallet pass.

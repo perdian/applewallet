@@ -4,15 +4,15 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 
-import de.perdian.tools.walletutil.Barcode;
-import de.perdian.tools.walletutil.BarcodeFormat;
-import de.perdian.tools.walletutil.Beacon;
-import de.perdian.tools.walletutil.BoardingPass;
-import de.perdian.tools.walletutil.Location;
-import de.perdian.tools.walletutil.SignedPass;
-import de.perdian.tools.walletutil.SigningData;
-import de.perdian.tools.walletutil.TextField;
-import de.perdian.tools.walletutil.TransitType;
+import de.perdian.tools.applewallettools.Barcode;
+import de.perdian.tools.applewallettools.BarcodeFormat;
+import de.perdian.tools.applewallettools.Beacon;
+import de.perdian.tools.applewallettools.BoardingPass;
+import de.perdian.tools.applewallettools.Location;
+import de.perdian.tools.applewallettools.SignedPass;
+import de.perdian.tools.applewallettools.SigningData;
+import de.perdian.tools.applewallettools.TextField;
+import de.perdian.tools.applewallettools.TransitType;
 
 /**
  * Creates a Apple Wallet pass for the fictional "dummy air" airline
