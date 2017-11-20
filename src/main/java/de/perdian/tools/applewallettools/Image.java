@@ -27,27 +27,31 @@ public class Image implements Serializable {
         this.setRetinaData(retinaData);
     }
 
-    public Image(DataSource dataSource, DataSource retinaDataSource) throws IOException {
-        if (dataSource != null) {
+    public static Image from(DataSource dataSource) {
+        return Image.from(dataSource, null);
+    }
+
+    public static Image from(DataSource dataSource, DataSource retinaDataSource) {
+        Image image = new Image();
+        image.setData(Image.bytesFromDataSource(dataSource));
+        image.setRetinaData(Image.bytesFromDataSource(retinaDataSource));
+        return image;
+    }
+
+    private static byte[] bytesFromDataSource(DataSource dataSource) {
+        if (dataSource == null) {
+            return null;
+        } else {
             try (InputStream dataInStream = new BufferedInputStream(dataSource.getInputStream())) {
                 try (ByteArrayOutputStream dataOutStream = new ByteArrayOutputStream()) {
                     for (int data = dataInStream.read(); data > -1; data = dataInStream.read()) {
                         dataOutStream.write(data);
                     }
                     dataOutStream.flush();
-                    this.setData(dataOutStream.toByteArray());
+                    return dataOutStream.toByteArray();
                 }
-            }
-        }
-        if (retinaDataSource != null) {
-            try (InputStream retinaDataInStream = new BufferedInputStream(retinaDataSource.getInputStream())) {
-                try (ByteArrayOutputStream retinaDataOutStream = new ByteArrayOutputStream()) {
-                    for (int data = retinaDataInStream.read(); data > -1; data = retinaDataInStream.read()) {
-                        retinaDataOutStream.write(data);
-                    }
-                    retinaDataOutStream.flush();
-                    this.setRetinaData(retinaDataOutStream.toByteArray());
-                }
+            } catch (IOException e) {
+                throw new IllegalArgumentException("Cannot load image content from data source at: " + dataSource, e);
             }
         }
     }

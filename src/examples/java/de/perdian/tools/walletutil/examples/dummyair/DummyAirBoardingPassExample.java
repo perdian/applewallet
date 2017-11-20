@@ -3,7 +3,6 @@ package de.perdian.tools.walletutil.examples.dummyair;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -16,7 +15,7 @@ import de.perdian.tools.applewallettools.Barcode;
 import de.perdian.tools.applewallettools.BarcodeFormat;
 import de.perdian.tools.applewallettools.Beacon;
 import de.perdian.tools.applewallettools.BoardingPass;
-import de.perdian.tools.applewallettools.KeyStorePassSigner;
+import de.perdian.tools.applewallettools.Image;
 import de.perdian.tools.applewallettools.Location;
 import de.perdian.tools.applewallettools.TextField;
 import de.perdian.tools.applewallettools.TransitType;
@@ -47,15 +46,9 @@ public class DummyAirBoardingPassExample {
         boardingPass.setRelevantDate(Instant.now());
         boardingPass.setVoided(Boolean.FALSE);
         boardingPass.setBarcodes(Arrays.asList(new Barcode(BarcodeFormat.QR, "TEST123TEST")));
+        boardingPass.setIcon(Image.from(new FileDataSource(new File("logo.png"))));
 
-        KeyStorePassSigner boardingPassSigner = new KeyStorePassSigner();
-        boardingPassSigner.setCa(new FileDataSource(new File(System.getProperty("user.home"), "Development/files/wallet_ca.cer")));
-        boardingPassSigner.setCert(new FileDataSource(new File(System.getProperty("user.home"), "Development/files/wallet_cert.pem")));
-        boardingPassSigner.setKeyName(Files.readAllLines(new File(System.getProperty("user.home"), "Development/files/wallet_keystore_keyname.txt").toPath()).get(0));
-        boardingPassSigner.setKeyStore(new FileDataSource(new File(System.getProperty("user.home"), "Development/files/wallet_keystore.p12")));
-        boardingPassSigner.setKeyStorePassword(Files.readAllLines(new File(System.getProperty("user.home"), "Development/files/wallet_keystore_password.txt").toPath()).get(0).toCharArray());
-
-        byte[] boardingPassBytes = boardingPass.toSignedPass(boardingPassSigner);
+        byte[] boardingPassBytes = boardingPass.toSignedPass(in -> in);
         try (ZipInputStream zipInputStream = new ZipInputStream(new ByteArrayInputStream(boardingPassBytes)) ) {
             for (ZipEntry nextEntry = zipInputStream.getNextEntry(); nextEntry != null; nextEntry = zipInputStream.getNextEntry()) {
                 int entrySize = 0;

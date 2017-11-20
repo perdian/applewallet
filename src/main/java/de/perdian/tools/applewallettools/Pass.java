@@ -48,7 +48,6 @@ public abstract class Pass implements Serializable {
     private String logoText = null;
     private String webServiceURL = null;
     private String authenticationToken = null;
-    private List<Field<?>> primaryFields = null;
     private List<Field<?>> secondaryFields = null;
     private List<Field<?>> auxiliaryFields = null;
     private List<Field<?>> backFields = null;
@@ -318,14 +317,6 @@ public abstract class Pass implements Serializable {
     }
     public void setAuthenticationToken(String authenticationToken) {
         this.authenticationToken = authenticationToken;
-    }
-
-    public List<Field<?>> getPrimaryFields() {
-        return this.primaryFields;
-    }
-
-    public void setPrimaryFields(List<Field<?>> primaryFields) {
-        this.primaryFields = primaryFields;
     }
 
     public List<Field<?>> getSecondaryFields() {
