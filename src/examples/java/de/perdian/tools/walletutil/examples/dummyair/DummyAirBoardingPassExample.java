@@ -1,16 +1,23 @@
 package de.perdian.tools.walletutil.examples.dummyair;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import javax.activation.FileDataSource;
 
 import de.perdian.tools.applewallettools.Barcode;
 import de.perdian.tools.applewallettools.BarcodeFormat;
 import de.perdian.tools.applewallettools.Beacon;
 import de.perdian.tools.applewallettools.BoardingPass;
+import de.perdian.tools.applewallettools.KeyStorePassSigner;
 import de.perdian.tools.applewallettools.Location;
-import de.perdian.tools.applewallettools.SignedPass;
-import de.perdian.tools.applewallettools.SigningData;
 import de.perdian.tools.applewallettools.TextField;
 import de.perdian.tools.applewallettools.TransitType;
 
@@ -22,7 +29,7 @@ import de.perdian.tools.applewallettools.TransitType;
 
 public class DummyAirBoardingPassExample {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         BoardingPass boardingPass = new BoardingPass();
         boardingPass.setPassTypeIdentifier("pass.com.example.boardingpass");
@@ -41,8 +48,23 @@ public class DummyAirBoardingPassExample {
         boardingPass.setVoided(Boolean.FALSE);
         boardingPass.setBarcodes(Arrays.asList(new Barcode(BarcodeFormat.QR, "TEST123TEST")));
 
-        SigningData signingData = new SigningData();
-        SignedPass signedPass = boardingPass.toSignedPass(signingData);
+        KeyStorePassSigner boardingPassSigner = new KeyStorePassSigner();
+        boardingPassSigner.setCa(new FileDataSource(new File(System.getProperty("user.home"), "Development/files/wallet_ca.cer")));
+        boardingPassSigner.setCert(new FileDataSource(new File(System.getProperty("user.home"), "Development/files/wallet_cert.pem")));
+        boardingPassSigner.setKeyName(Files.readAllLines(new File(System.getProperty("user.home"), "Development/files/wallet_keystore_keyname.txt").toPath()).get(0));
+        boardingPassSigner.setKeyStore(new FileDataSource(new File(System.getProperty("user.home"), "Development/files/wallet_keystore.p12")));
+        boardingPassSigner.setKeyStorePassword(Files.readAllLines(new File(System.getProperty("user.home"), "Development/files/wallet_keystore_password.txt").toPath()).get(0).toCharArray());
+
+        byte[] boardingPassBytes = boardingPass.toSignedPass(boardingPassSigner);
+        try (ZipInputStream zipInputStream = new ZipInputStream(new ByteArrayInputStream(boardingPassBytes)) ) {
+            for (ZipEntry nextEntry = zipInputStream.getNextEntry(); nextEntry != null; nextEntry = zipInputStream.getNextEntry()) {
+                int entrySize = 0;
+                for (int data = zipInputStream.read(); data > -1; data = zipInputStream.read()) {
+                    entrySize++;
+                }
+                System.out.println(nextEntry + " [" + entrySize + " bytes]");
+            }
+        }
 
     }
 

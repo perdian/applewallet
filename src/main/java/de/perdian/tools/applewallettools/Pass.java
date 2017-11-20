@@ -1,14 +1,13 @@
 package de.perdian.tools.applewallettools;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,44 +67,29 @@ public abstract class Pass implements Serializable {
      * @throws SigningException
      *      thrown if the pass cannot be created correctly
      */
-    public SignedPass toSignedPass(SigningData signingData) {
+    public byte[] toSignedPass(PassSigner passSigner) {
         try {
 
             log.info("Signing Apple Wallet pass for data: {}", this);
-            ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
-            try (ZipOutputStream zipOutputStream = new ZipOutputStream(byteOutputStream)) {
+            PassContent passContent = new PassContent();
 
-                // Build the manifest and add into the target ZIP archive
-                JsonObject passJsonObject = this.toJsonObject();
-                String passJson = new GsonBuilder().setPrettyPrinting().create().toJson(passJsonObject);
-                zipOutputStream.putNextEntry(new ZipEntry("pass.json"));
-                zipOutputStream.write(passJson.getBytes("UTF-8"));
+            JsonObject passJsonObject = this.toJsonObject();
+            String passJson = new GsonBuilder().setPrettyPrinting().create().toJson(passJsonObject);
+            passContent.add("pass.json", passJson.getBytes("UTF-8"));
 
-                // Add all available images as files within the target ZIP archive
-                Map<String, Image> images = this.toImages();
-                for (Map.Entry<String, Image> imageEntry : images.entrySet()) {
-                    if (imageEntry.getValue() != null) {
-                        if (imageEntry.getValue().getData() != null) {
-                            log.debug("Adding entry to target file: {}", imageEntry.getKey() + ".png");
-                            zipOutputStream.putNextEntry(new ZipEntry(imageEntry.getKey() + ".png"));
-                            zipOutputStream.write(imageEntry.getValue().getData());
-                        }
-                        if (imageEntry.getValue().getRetinaData() != null) {
-                            log.debug("Adding entry to target file: {}", imageEntry.getKey() + "@2x.png");
-                            zipOutputStream.putNextEntry(new ZipEntry(imageEntry.getKey() + "@2x.png"));
-                            zipOutputStream.write(imageEntry.getValue().getRetinaData());
-                        }
+            // Add all available images as files within the target ZIP archive
+            for (Map.Entry<String, Image> imageEntry : this.toImages().entrySet()) {
+                if (imageEntry.getValue() != null) {
+                    if (imageEntry.getValue().getData() != null) {
+                        passContent.add(imageEntry.getKey() + ".png", imageEntry.getValue().getData());
+                    }
+                    if (imageEntry.getValue().getRetinaData() != null) {
+                        passContent.add(imageEntry.getKey() + "@2x.png", imageEntry.getValue().getRetinaData());
                     }
                 }
-
-                // We're done, make sure everything is written into the stream
-                zipOutputStream.flush();
-
             }
 
-            SignedPass signedPass = new SignedPass();
-            signedPass.setBytes(byteOutputStream.toByteArray());
-            return signedPass;
+            return passContent.toZipFileContent(passSigner);
 
         } catch (IOException e) {
             throw new PassCreationException("Cannot create new pass", e);
@@ -113,10 +97,15 @@ public abstract class Pass implements Serializable {
     }
 
     protected Map<String, Image> toImages() {
-        Map<String, Image> images = new HashMap<>();
-        images.put("logo", this.getLogo());
-        images.put("icon", this.getIcon());
-        return images;
+        Image iconImage = this.getIcon();
+        if (iconImage == null || iconImage.isEmpty()) {
+            throw new IllegalArgumentException("Property 'icon' must be present");
+        } else {
+            Map<String, Image> images = new HashMap<>();
+            images.put("logo", this.getLogo());
+            images.put("icon", this.getIcon());
+            return images;
+        }
     }
 
     /**
@@ -138,6 +127,8 @@ public abstract class Pass implements Serializable {
             throw new IllegalArgumentException("Property 'teamIdentifier' must not be empty");
         } else {
 
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm'Z'");
+
             jsonObject.addProperty("description", this.getDescription());
             jsonObject.addProperty("formatVersion", 1);
             jsonObject.addProperty("passTypeIdentifier", this.getPassTypeIdentifier());
@@ -153,11 +144,15 @@ public abstract class Pass implements Serializable {
             }
 
             jsonObject.addProperty("voided", this.getVoided());
-            jsonObject.addProperty("expirationDate", this.getExpirationDate() == null ? null : this.getExpirationDate().toString());
+            if (this.getExpirationDate() != null) {
+                jsonObject.addProperty("expirationDate", dateTimeFormatter.format(this.getExpirationDate().atZone(ZoneId.of("UTC"))));
+            }
             jsonObject.add("beacons", PassHelper.toJsonArray(this.getBeacons(), Beacon::toJsonObject));
             jsonObject.add("locations", PassHelper.toJsonArray(this.getLocations(), Location::toJsonObject));
             jsonObject.addProperty("maxDistance", this.getMaxDistance());
-            jsonObject.addProperty("relevantDate", this.getRelevantDate() == null ? null : this.getRelevantDate().toString());
+            if (this.getRelevantDate() != null) {
+                jsonObject.addProperty("relevantDate", dateTimeFormatter.format(this.getRelevantDate().atZone(ZoneId.of("UTC"))));
+            }
             jsonObject.add("barcodes", PassHelper.toJsonArray(this.getBarcodes(), Barcode::toJsonObject));
             jsonObject.addProperty("backgroundColor", this.getBackgroundColor() == null ? null : this.getBackgroundColor().toString());
             jsonObject.addProperty("foregroundColor", this.getForegroundColor() == null ? null : this.getForegroundColor().toString());

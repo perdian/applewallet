@@ -1,6 +1,9 @@
 package de.perdian.tools.applewallettools;
 
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 import com.google.gson.JsonObject;
 
@@ -27,10 +30,16 @@ public class DateField extends Field<Instant> {
         } else if (this.getTimeStyle() == null) {
             throw new IllegalArgumentException("Property 'timeStyle' must not be null!");
         } else {
+
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm'Z'");
+            ZonedDateTime value = this.getValue() == null ? null : this.getValue().atZone(ZoneId.of("UTC"));
+            ZonedDateTime attributedValue = this.getAttributedValue() == null ? null : this.getAttributedValue().atZone(ZoneId.of("UTC"));
+
             JsonObject jsonObject = super.toJsonObject();
-            jsonObject.addProperty("value", this.getValue().toString());
-            jsonObject.addProperty("attributedValue", this.getAttributedValue().toString());
+            jsonObject.addProperty("value", value == null ? null : dateTimeFormatter.format(value));
+            jsonObject.addProperty("attributedValue", attributedValue == null ? null : dateTimeFormatter.format(attributedValue));
             return jsonObject;
+
         }
     }
 
