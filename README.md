@@ -47,6 +47,49 @@ A few example of the different types of passes and the resulting look and feel:
 
 ![Boarding Pass](docs/examples/boardingPass_300.jpeg)
 
+### Coupon
+
+      Coupon pass = new Coupon();
+      pass.setPassTypeIdentifier("YOUR PASS TYPE IDENTIFIER");
+      pass.setTeamIdentifier("YOUR TEAM IDENTIFIER");
+      pass.setOrganizationName("YOUR ORGANIZATION NAME");
+      pass.setSerialNumber("123456");
+      pass.setDescription("Coupon for your next purchase");
+      pass.setPrimaryField(new TextField("discount", "Valid for all purchases", "50% OFF"));
+      pass.setAuxiliaryFields(Arrays.asList(new TextField("validUntil", "Valid until", "October 12th 2018")));
+      pass.setBarcodes(Arrays.asList(new Barcode(BarcodeFormat.PDF417, "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.")));
+      pass.setExpirationDate(Instant.now().plus(100, ChronoUnit.DAYS));
+      pass.setRelevantDate(Instant.now());
+      pass.setBackgroundColor(new Color(200, 200, 200));
+      pass.setForegroundColor(new Color(50, 50, 0));
+      pass.setLabelColor(new Color(50, 50, 0));
+      pass.setIcon(Image.from(new URLDataSource(CouponExample.class.getResource("logo-beauty-box.png"))));
+      pass.setLogo(Image.from(new URLDataSource(CouponExample.class.getResource("logo-beauty-box.png"))));
+
+![Coupon](docs/examples/coupon_300.jpeg)
+
+### Event Ticket
+
+      EventTicket pass = new EventTicket();
+      pass.setPassTypeIdentifier("YOUR PASS TYPE IDENTIFIER");
+      pass.setTeamIdentifier("YOUR TEAM IDENTIFIER");
+      pass.setOrganizationName("YOUR ORGANIZATION NAME");
+      pass.setSerialNumber("123456");
+      pass.setDescription("Ticket for your next event");
+      pass.setPrimaryField(new TextField("discount", "Event", "Arthur Dent Live in Concert"));
+      pass.setSecondaryFields(Arrays.asList(new TextField("time", "Showtime", "October 12th 2018 20:00")));
+      pass.setAuxiliaryFields(Arrays.asList(new TextField("location", "Location", "Super Mega Stadium")));
+      pass.setHeaderFields(Arrays.asList(new TextField("booking", "Booking code", "ABC123456XYZ")));
+      pass.setBarcodes(Arrays.asList(new Barcode(BarcodeFormat.AZTEC, "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.")));
+      pass.setExpirationDate(Instant.now().plus(100, ChronoUnit.DAYS));
+      pass.setRelevantDate(Instant.now());
+      pass.setBackgroundColor(new Color(210, 210, 255));
+      pass.setThumbnail(Image.from(new URLDataSource(EventTicketExample.class.getResource("person.jpg"))));
+      pass.setIcon(Image.from(new URLDataSource(EventTicketExample.class.getResource("logo-the-dance-studio.png"))));
+      pass.setLogo(Image.from(new URLDataSource(EventTicketExample.class.getResource("logo-the-dance-studio.png"))));
+
+![Coupon](docs/examples/eventTicket_300.jpeg)
+
 ## Known limitations
 
 * All the field values and images set with the pass are non-localized, meaning that they will not change for different languages. Apple Wallet supports localizing passes but this has not yet been implemented with this API.
