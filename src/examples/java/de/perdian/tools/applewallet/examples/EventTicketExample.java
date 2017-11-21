@@ -14,7 +14,7 @@ import de.perdian.tools.applewallet.Image;
 import de.perdian.tools.applewallet.TextField;
 
 /**
- * Creates a Apple Wallet pass for event ticket pass type
+ * Creates a Apple Wallet pass for an event ticket pass type
  *
  * @author Christian Robert
  */

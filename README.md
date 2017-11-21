@@ -4,6 +4,16 @@ Utility for creating Apple Wallet passes.
 
 ## Usage
 
+Include the latest version as Maven dependency:
+
+      ...
+      <dependency>
+          <groupId>de.perdian.tools</groupId>
+          <artifactId>applewallet</artifactId>
+          <version>1.0.0</version>
+      </dependency>
+      ...
+
 The configuration of a pass happens by created an implementation of the `Pass` interface for which the following implementations are available (they directly correspond to the different pass styles listed at https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/PassKit_PG/Creating.html):
 
 * `de.perdian.tools.applewallet.BoardingPass`
@@ -15,16 +25,18 @@ The configuration of a pass happens by created an implementation of the `Pass` i
 First all data that should be added to the pass must be configured via the properties in the chosen `Pass` implementation class:
 
     GenericPass pass = new GenericPass();
+    // see below for detailed examples
 
 After the data has been set the pass needs to be signed with your Apple certificate:
 
     KeyStorePassSigner passSigner = new KeyStorePassSigner();
+    // Configure the signer via the setXXX methods
 
 The bytes returned from the `Pass#toSignedPass` can then be used to download the actual pass to the customers device.
 
 ## Examples
 
-A few example of the different types of passes and the resulting look and feel:
+The examples for the different types of passes can be found at `src/examples/resources` within the package `de.perdian.tools.applewallet.examples`.
 
 ### Boarding pass
 
@@ -88,7 +100,44 @@ A few example of the different types of passes and the resulting look and feel:
       pass.setIcon(Image.from(new URLDataSource(EventTicketExample.class.getResource("logo-the-dance-studio.png"))));
       pass.setLogo(Image.from(new URLDataSource(EventTicketExample.class.getResource("logo-the-dance-studio.png"))));
 
-![Coupon](docs/examples/eventTicket_300.jpeg)
+![Event Ticket](docs/examples/eventTicket_300.jpeg)
+
+### Generic Pass
+
+      GenericPass pass = new GenericPass();
+      pass.setPassTypeIdentifier("YOUR PASS TYPE IDENTIFIER");
+      pass.setTeamIdentifier("YOUR TEAM IDENTIFIER");
+      pass.setOrganizationName("YOUR ORGANIZATION NAME");
+      pass.setSerialNumber("123456");
+      pass.setDescription("Generic for your next purchase");
+      pass.setPrimaryField(new TextField("discount", "Your destination", "Cologne Cathedral"));
+      pass.setSecondaryFields(Arrays.asList(new TextField("validUntil", "Valid until", "October 12th 2018")));
+      pass.setBarcodes(Arrays.asList(new Barcode(BarcodeFormat.PDF417, "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.")));
+      pass.setExpirationDate(Instant.now().plus(100, ChronoUnit.DAYS));
+      pass.setRelevantDate(Instant.now());
+      pass.setThumbnail(Image.from(new URLDataSource(GenericPassExample.class.getResource("location.jpg"))));
+      pass.setIcon(Image.from(new URLDataSource(GenericPassExample.class.getResource("logo-the-web-works.png"))));
+      pass.setLogo(Image.from(new URLDataSource(GenericPassExample.class.getResource("logo-the-web-works.png"))));
+      pass.setLogoText("The very best");
+
+![Generic Pass](docs/examples/genericPass_300.jpeg)
+
+### Store Card
+
+      StoreCard pass = new StoreCard();
+      pass.setPassTypeIdentifier("YOUR PASS TYPE IDENTIFIER");
+      pass.setTeamIdentifier("YOUR TEAM IDENTIFIER");
+      pass.setOrganizationName("YOUR ORGANIZATION NAME");
+      pass.setSerialNumber("123456");
+      pass.setDescription("Generic for your next purchase");
+      pass.setPrimaryField(new TextField("customer", "John Doe", "1234567890"));
+      pass.setBarcodes(Arrays.asList(new Barcode(BarcodeFormat.QR, "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.")));
+      pass.setExpirationDate(Instant.now().plus(100, ChronoUnit.DAYS));
+      pass.setRelevantDate(Instant.now());
+      pass.setIcon(Image.from(new URLDataSource(StoreCardExample.class.getResource("logo-yoga-baby.png"))));
+      pass.setLogo(Image.from(new URLDataSource(StoreCardExample.class.getResource("logo-yoga-baby.png"))));
+
+![Store Card](docs/examples/storeCard_300.jpeg)
 
 ## Known limitations
 

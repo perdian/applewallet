@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>de.perdian.tools</groupId>
-    <artifactId>applewallettools</artifactId>
+    <artifactId>applewallet</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
     <name>Apple Wallet Tools</name>

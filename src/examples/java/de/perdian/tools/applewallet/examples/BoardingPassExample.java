@@ -16,7 +16,7 @@ import de.perdian.tools.applewallet.TextField;
 import de.perdian.tools.applewallet.TransitType;
 
 /**
- * Creates a Apple Wallet pass for the boarding pass type
+ * Creates a Apple Wallet pass for a boarding pass type
  *
  * @author Christian Robert
  */
