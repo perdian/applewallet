@@ -4,15 +4,7 @@ Utility for creating Apple Wallet passes.
 
 ## Usage
 
-Include the latest version as Maven dependency:
-
-      ...
-      <dependency>
-          <groupId>de.perdian.tools</groupId>
-          <artifactId>applewallet</artifactId>
-          <version>1.0.0</version>
-      </dependency>
-      ...
+TODO: UPLOAD ARTIFACTS TO MAVEN CENTRAL
 
 The configuration of a pass happens by created an implementation of the `Pass` interface for which the following implementations are available (they directly correspond to the different pass styles listed at https://developer.apple.com/library/content/documentation/UserExperience/Conceptual/PassKit_PG/Creating.html):
 
